@@ -1,13 +1,13 @@
 # vtcache
----------
-Provides an API and in-memory database for storing and retrieving VMware tags and facts. `vtcache` is specifically designed to store and retrieve JSON returned by the Ansible [vmware_tags_facts](https://docs.ansible.com/ansible/devel/modules/vmware_tag_facts_module.html) module.
+
+Provides an API and in-memory database for storing and retrieving VMware tags and facts. `vtcache` is specifically designed to store and retrieve python dict objects returned by the Ansible [vmware_tags_facts](https://docs.ansible.com/ansible/devel/modules/vmware_tag_facts_module.html) module.
 
 ## design
----------
+
 `vtcache` is a Spring Boot application and uses an in-memory H2 database for caching tags and facts. This allows for rapid store and retrieval, and is flushed when the application is restarted. 
 
 `vtcache` provides two API endpoints for interacting with tags:
-- '/api/tags/store'(POST): deletes all tags currently present in the cache, and stores the JSON body from the  POST request.
+- '/api/tags/store'(POST): deletes all tags currently present in the cache, and stores the python dict body from the  POST request.
 - '/api/tags/retrieve'(GET): returns all tags currently in the cache as a JSON array
 
 `vtcache` uses Spring Boot's embedded Tomcat web server, which coupled with the H2 in-memory database means it can be deployed as a fat-jar anywhere Java is running.
@@ -15,7 +15,6 @@ Provides an API and in-memory database for storing and retrieving VMware tags an
 The application can be made more persistent by simply using a Docker container database, and updating the `application.properties` to use the new database parameters. You may also need to update dependencies.
 
 ## package
-----------
 
 Maven can be used to create a fat-jar:
 
@@ -37,7 +36,6 @@ mvn package
 ```
 
 ## deployment
--------------
 
 ### requirements
 
@@ -79,11 +77,10 @@ May 26 18:41:59 media.aliens java[3281]:  =========|_|==============|___/=/_/_/_
 ```
 
 ## interact
------------
 
 ### store tags
 
-You can use the '/api/tags/store' endpoint to store tags: 
+You can use the '/api/tags/store' endpoint to store python dict tags from the 'vmware_tags_facts' output: 
 
 ```
 curl --header "Content-Type: application/json"   --request POST   --data "{'Sample_Tag_0002': {'tag_category_id': 'urn:vmomi:InventoryServiceCategory:6de17f28-7694-43ec-a783-d09c141819ae:GLOBAL', 'tag_description': 'Sample Description', 'tag_id': 'urn:vmomi:InventoryServiceTag:a141f212-0f82-4f05-8eb3-c49647c904c5:GLOBAL', 'tag_used_by': []}, 'ubuntu_machines': {'tag_category_id': 'urn:vmomi:InventoryServiceCategory:89573410-29b4-4cac-87a4-127c084f3d50:GLOBAL', 'tag_description': '', 'tag_id': 'urn:vmomi:InventoryServiceTag:7f3516d5-a750-4cb9-8610-6747eb39965d:GLOBAL', 'tag_used_by': []}, 'fedora_machines': {'tag_category_id': 'urn:vmomi:InventoryServiceCategory:baa90bae-951b-4e87-af8c-be681a1ba30c:GLOBAL', 'tag_description': '', 'tag_id': 'urn:vmomi:InventoryServiceTag:7d27d182-3ecd-4200-9d72-410cc6398a8a:GLOBAL', 'tag_used_by': []}}"   http://localhost:9999/api/tags/store

@@ -33,8 +33,8 @@ public class VtcacheController {
         // delete any existing tags
         tagRepository.deleteAll();
 
-        // the json returned by Ansible is horrible - let's fix it
-        // so that java can handle it...
+        // The Ansible 'vmware_tags_facts' python dict output is similar to
+        // JSON, it just needs a little massaging
         String fixed = makeJsonGreatAgain(json);
 
         ObjectMapper mapper = new ObjectMapper();
@@ -62,11 +62,10 @@ public class VtcacheController {
     }
 
     /**
-     * Forces JSON strings returned from the Ansible 'vmware_tags_facts' module
+     * Forces python dict strings returned from the Ansible 'vmware_tags_facts' module
      * into a format that can be understood by Jackson.
      *
-     * @param json JSON String returned passed from the Ansible 'vmware_tags_facts'
-     *             module
+     * @param pydict  String passed from the Ansible 'vmware_tags_facts' module
      * @return String containing a properly-formatted JSON array of tags
      */
     private String makeJsonGreatAgain(String json) {
