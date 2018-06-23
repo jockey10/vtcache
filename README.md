@@ -1,6 +1,6 @@
 # vtcache
 ---------
-Provides an API and in-memory database for storing and retrieving VMware tags and facts. This applications is specifically designed to store and retrieve JSON returned by the Ansible [vmware_tags_facts](https://docs.ansible.com/ansible/devel/modules/vmware_tag_facts_module.html) module.
+Provides an API and in-memory database for storing and retrieving VMware tags and facts. `vtcache` is specifically designed to store and retrieve JSON returned by the Ansible [vmware_tags_facts](https://docs.ansible.com/ansible/devel/modules/vmware_tag_facts_module.html) module.
 
 ## design
 ---------
@@ -41,7 +41,7 @@ mvn package
 
 ### requirements
 
-`vtcache` only requires the Java 8+ to be installed and configured. It has been tested on Fedora with the `java-1.8.0-openjdk` package.
+`vtcache` only requires Java 8+ to be installed and configured. It has been tested on Fedora with the `java-1.8.0-openjdk` package.
 
 ### maven
 

@@ -24,6 +24,10 @@ public class VtcacheController {
     @Autowired
     TagRepository tagRepository;
 
+    /**
+     * Route to store VMware tags. Deletes all tags before storing new ones.
+     * @param json JSON String passed in the request body
+     */
     @PostMapping(value="/store", consumes = APPLICATION_JSON_VALUE)
     public void tagJson(@RequestBody String json) {
         // delete any existing tags
@@ -43,9 +47,12 @@ public class VtcacheController {
         }
     }
 
+    /**
+     * Route to retrieve tags from the H2 in-memory database.
+     * @return a JSON array of @Tag objects
+     */
     @GetMapping(value="/retrieve", produces=APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Tag>> getTags(){
-        // get the first item
         Iterable<Tag> tags = tagRepository.findAll();
         ArrayList<Tag> to_json = new ArrayList<>();
         tags.forEach(to_json::add);
@@ -54,7 +61,15 @@ public class VtcacheController {
         return new ResponseEntity<>(to_json,headers,HttpStatus.OK);
     }
 
-    public String makeJsonGreatAgain(String json) {
+    /**
+     * Forces JSON strings returned from the Ansible 'vmware_tags_facts' module
+     * into a format that can be understood by Jackson.
+     *
+     * @param json JSON String returned passed from the Ansible 'vmware_tags_facts'
+     *             module
+     * @return String containing a properly-formatted JSON array of tags
+     */
+    private String makeJsonGreatAgain(String json) {
         //firstly, remove the leading '{' from the string
         String ret = "";
         String str = json.substring(1);
@@ -62,24 +77,22 @@ public class VtcacheController {
         // split the string
         String[] strings = str.split("},");
         for(String s : strings) {
-            System.out.println(s);
             // now, remove any closing brackets
             s.replaceAll("}", "");
-            
+
             // move the name element inside the brackets
             Pattern patt = Pattern.compile("\'(\\w*)\':\\s*\\{");
             Matcher m = patt.matcher(s);
             if (m.find()) {
                 String out = m.replaceFirst("{ \'name\': \'$1\',");  // number 46
-                System.out.println(out);
                 ret += out + "},";
             }
         }
 
         //strip the last two brackets and comma
         ret = ret.substring(0,ret.length()-3);
+        //replace all single-quotes with double-quptes
         ret = ret.replaceAll("\'","\"");
-        System.out.println(ret);
         //add array markers
         ret = "["+ret+"]";
         return ret;
