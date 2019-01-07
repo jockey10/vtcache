@@ -56,7 +56,7 @@ The application source comes with a systemd unit file, which you can use to cont
 
 ```
 mkdir /opt/vtcache
-cp vtcache-1.0-RELEASE.jar /opt/vtcache/vtcache.jar
+cp vtcache-1.1-RELEASE.jar /opt/vtcache/vtcache.jar
 
 cp vtcache.service /usr/lib/systemd/system/
 systemctl daemon-reload
@@ -75,6 +75,59 @@ May 26 18:41:59 media.aliens java[3281]:   '  |____| .__|_| |_|_| |_\__, | / / /
 May 26 18:41:59 media.aliens java[3281]:  =========|_|==============|___/=/_/_/_/
 ...
 ```
+
+## management
+
+### monitoring
+
+`vtcache` exports prometheus metrics at the endpoint `/actuator/prometheus`. You can use the Prometheus and Grafana containers to monitor the application. 
+
+#### prometheus
+
+Create a file for the Prometheus configuration. The IP used for the `vtcache` application must be accessible from the containerised Prometheus service:
+```
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'vtcache'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+       - targets: ['172.17.0.1:9999']
+```
+Ensure the file is owned by the uid:gid `991:991`:
+```
+chown 991:991 /opt/prometheus/prometheus.yml
+```
+Start the Prometheus service with Podman, and ensure the interface reflects the configuration provided:
+```
+podman run -d --name=prometheus -v /opt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml --net=host prom/prometheus
+```
+![prometheus config](https://i.imgur.com/NXqZK5V.png)
+
+#### grafana
+Start a local Grafana instance with Podman:
+```
+podman -d --name=grafana --net=host grafana/grafana
+```
+Navigate to http://localhost:3000, and enter the credentials `admin/admin`:
+![grafana login](https://i.imgur.com/tDH5KtD.png)
+
+From the wizard, select `Add data source`:
+![grafana wizard](https://i.imgur.com/I3KDTYx.png)
+
+Select `Prometheus`, and enter the following details. Select `Save and test`, and ensure the `Data source is working` message is displayed:
+![prometheus data source](https://i.imgur.com/qQi8H4q.png)
+
+From the left-hand menu, select `+`, and then `Import`. In the following screen, enter `4701` for the Grafana.com ID:
+![dashboard import](https://i.imgur.com/mzAHryW.png)
+
+Select the datasource, and then `Import`:
+![dashboard config](https://i.imgur.com/UWLSlva.png)
+
+You can now view the `vtcache` application metrics:
+![vtcache metrics](https://i.imgur.com/vzdpJGr.png)
 
 ## interact
 
